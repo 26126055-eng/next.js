@@ -7,6 +7,7 @@
 
 import {
   type SetLedgerValue,
+  readBitLedger,
   readMinLedger,
 } from '../../../shared/lib/ledger-decoding'
 import { STATIC_STALETIME_MS } from '../router-reducer/reducers/navigate-reducer'
@@ -206,6 +207,10 @@ export function createNavigationSeed(
             : readFulfilledIsPartial(transportHead.p),
         varyParams: readVaryParams(transportHead.v, rootVaryParams),
         staleTimeSeconds,
+        needsRuntimeRequest:
+          transportHead.u !== undefined
+            ? readBitLedger(transportHead.u, false, true)
+            : null,
       }
     }
   } else {
@@ -684,6 +689,11 @@ function decodeTransportNode(
       // above; skipped entirely (decoded as null, "unknown") when the caller
       // passed no root params — see createNavigationSeed.
       varyParams: readVaryParams(nodeData.v, rootVaryParams),
+      // Read each segment's captured verdict from this buffered stage.
+      needsRuntimeRequest:
+        nodeData.u !== undefined
+          ? readBitLedger(nodeData.u, false, true)
+          : null,
       staleTimeSeconds,
     }
   }
