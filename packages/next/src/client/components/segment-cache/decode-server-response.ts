@@ -5,6 +5,7 @@
  * downstream operates on RouteTree / NavigationSeed / CacheNode.
  */
 
+import type { SetLedgerValue } from '../../../shared/lib/ledger-decoding'
 import type {
   FlightRouterState,
   Segment as FlightRouterStateSegment,
@@ -20,7 +21,6 @@ import type {
   TransportSegment,
 } from '../../../shared/lib/rsc-transport'
 import { readFulfilledValue } from '../../../shared/lib/rsc-transport'
-import type { VaryParamsIterable } from '../../../shared/lib/segment-cache/vary-params-decoding'
 import { readVaryParams } from '../../../shared/lib/segment-cache/vary-params-decoding'
 import {
   type SegmentRequestKey,
@@ -116,7 +116,7 @@ export function createNavigationSeed(
   // only segment-cache writes read them, and those decode their own,
   // buffered, payloads. Null decodes every set as null ("unknown; key on
   // all params") without touching the wire iterables.
-  rootVaryParams: VaryParamsIterable | null,
+  rootVaryParams: SetLedgerValue<string> | null,
   // Whether anything in the response is not fully resolved: dynamic holes, runtime holes, anything suspended.
   // Boolean-form nodes resolve their partiality to this value (their wire
   // boolean is a render-wide constant that carries no per-node information —
@@ -345,7 +345,7 @@ export function decodeTransportTreeIntoRouteTree(
   // The response's root vary params, unioned into every segment's drained
   // set. Pass null when vary params are unavailable or unwanted; see
   // createNavigationSeed.
-  rootVaryParams: VaryParamsIterable | null,
+  rootVaryParams: SetLedgerValue<string> | null,
   // The response-level partiality, which boolean-form nodes resolve their
   // own partiality to; see createNavigationSeed.
   isResponsePartial: boolean,
@@ -433,7 +433,7 @@ function decodeTransportNode(
   // comparison must continue, and keeps it through inactive parallel routes,
   // where the comparison must stop.
   compareBase: FlightRouterState | undefined,
-  rootVaryParams: VaryParamsIterable | null,
+  rootVaryParams: SetLedgerValue<string> | null,
   isResponsePartial: boolean,
   requestKey: SegmentRequestKey,
   parentPartialVaryPath: PartialSegmentVaryPath | null,
