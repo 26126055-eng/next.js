@@ -382,6 +382,69 @@ export function getRenderedSearchFromVaryPath(
     : null
 }
 
+export function didLocalVaryParamsChange(
+  currentVaryPath: SegmentVaryPath,
+  nextVaryPath: SegmentVaryPath
+): boolean {
+  // Used while traversing two structurally matching route trees in lockstep.
+  // The first entry of a finalized vary path is the request key, not a param:
+  //
+  //   page:   request key -> search params -> path params ...
+  //   layout: request key -> path params ...
+  //
+  // `parent` points to the previous entry in this linked list, not the parent
+  // route segment. Skip the request key to reach the newest param input.
+  const currentParams = currentVaryPath.parent
+  const nextParams = nextVaryPath.parent
+  if (currentParams === null || nextParams === null) {
+    // A layout with no path params has no entries after its request key.
+    return currentParams !== nextParams
+  }
+  // Ancestor params have already been compared by the caller's traversal, so
+  // only this newest value can differ: search params for a page, or the path
+  // param for a dynamic layout. Static layouts inherit their parent's params,
+  // so this checks an already-matched ancestor value for those nodes. There is
+  // no need to walk the rest of either list.
+  return currentParams.value !== nextParams.value
+}
+
+export function didPathParamsChange<TCurrent, TNext>(
+  currentTree: RouteTree<TCurrent>,
+  nextTree: RouteTree<TNext>
+): boolean {
+  // Used while traversing two structurally matching route trees in lockstep.
+  // Unlike didLocalVaryParamsChange, this compares every path param the
+  // segment renders under, including inherited ones: the traversal continues
+  // below a layout whose param value changed, so an ancestor's value is not
+  // guaranteed to match at this point.
+  let currentParams: VaryPath | null = currentTree.isPage
+    ? getPartialPageVaryPath(currentTree.varyPath)
+    : getPartialLayoutVaryPath(currentTree.varyPath)
+  let nextParams: VaryPath | null = nextTree.isPage
+    ? getPartialPageVaryPath(nextTree.varyPath)
+    : getPartialLayoutVaryPath(nextTree.varyPath)
+  // Both trees are at the same route position, so the two lists hold the same
+  // params in the same order and end together.
+  while (currentParams !== null && nextParams !== null) {
+    if (currentParams.value !== nextParams.value) {
+      return true
+    }
+    currentParams = currentParams.parent
+    nextParams = nextParams.parent
+  }
+  return false
+}
+
+export function didSearchParamsChange(
+  currentVaryPath: PageVaryPath,
+  nextVaryPath: PageVaryPath
+): boolean {
+  return (
+    getRenderedSearchFromVaryPath(currentVaryPath) !==
+    getRenderedSearchFromVaryPath(nextVaryPath)
+  )
+}
+
 export function getFulfilledSegmentVaryPath(
   original: VaryPath,
   varyParams: Set<string>
