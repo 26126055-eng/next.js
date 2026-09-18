@@ -179,7 +179,7 @@ export async function getRequestHandlers({
 
 export type StartServerResult = {
   distDir: string
-  humanUpgradeContext: import('../../lib/upgrade/human-nudge').HumanUpgradeContext
+  upgradeContext: import('../../lib/upgrade/nudge').UpgradeContext
 }
 
 export async function startServer(
@@ -317,8 +317,9 @@ export async function startServer(
 
   let cleanupListeners = isDev ? new AsyncCallbackSet() : undefined
 
-  let humanUpgradeContext: StartServerResult['humanUpgradeContext'] = {
+  let upgradeContext: StartServerResult['upgradeContext'] = {
     policy: false,
+    cacheComponents: false,
   }
   const distDir = await new Promise<string>((resolve) => {
     server.on('listening', async () => {
@@ -499,7 +500,7 @@ export async function startServer(
           serverFastRefresh,
         })
         devMemoryThresholdRestart = initResult.devMemoryThresholdRestart
-        humanUpgradeContext = initResult.humanUpgradeContext
+        upgradeContext = initResult.upgradeContext
         requestHandler = initResult.requestHandler
         upgradeHandler = initResult.upgradeHandler
         nextServer = initResult.server
@@ -615,7 +616,7 @@ export async function startServer(
     })
   }
 
-  return { distDir, humanUpgradeContext }
+  return { distDir, upgradeContext }
 }
 
 if (process.env.NEXT_PRIVATE_WORKER && process.send) {
@@ -676,7 +677,7 @@ if (process.env.NEXT_PRIVATE_WORKER && process.send) {
         nextServerReady: true,
         port: process.env.PORT,
         distDir: result.distDir,
-        humanUpgradeContext: result.humanUpgradeContext,
+        upgradeContext: result.upgradeContext,
       })
     }
   })
