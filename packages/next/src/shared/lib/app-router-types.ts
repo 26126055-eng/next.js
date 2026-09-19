@@ -45,10 +45,6 @@ export type CacheNode = {
    */
   prefetchRsc: React.ReactNode
 
-  prefetchHead: HeadData | null
-
-  head: HeadData
-
   /**
    * A shared mutable ref that tracks whether this segment should be scrolled
    * to. All new segments created during a single navigation share the same

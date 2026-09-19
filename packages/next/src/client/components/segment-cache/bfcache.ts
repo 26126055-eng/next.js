@@ -32,8 +32,6 @@ import {
 export type BFCacheEntry = {
   rsc: React.ReactNode | null
   prefetchRsc: React.ReactNode | null
-  head: React.ReactNode | null
-  prefetchHead: React.ReactNode | null
 
   // The bfcacheId of the CacheNode that wrote this entry. Restored on
   // history-traversal navigations so that `useRouter().bfcacheId` is stable
@@ -72,8 +70,6 @@ export function writeToBFCache(
   varyPath: SegmentVaryPath,
   rsc: React.ReactNode,
   prefetchRsc: React.ReactNode,
-  head: React.ReactNode,
-  prefetchHead: React.ReactNode,
   dynamicStaleAt: number,
   bfcacheId: number
 ): void {
@@ -84,11 +80,6 @@ export function writeToBFCache(
   const entry: BFCacheEntry = {
     rsc,
     prefetchRsc,
-
-    // TODO: These fields will be removed from both BFCacheEntry and
-    // SegmentCacheEntry. The head has its own separate cache entry.
-    head,
-    prefetchHead,
 
     bfcacheId,
 
@@ -111,27 +102,6 @@ export function writeToBFCache(
   }
   const isRevalidation = false
   setInCacheMap(bfcacheMap, varyPath, entry, isRevalidation)
-}
-
-export function writeHeadToBFCache(
-  now: number,
-  varyPath: SegmentVaryPath,
-  head: React.ReactNode,
-  prefetchHead: React.ReactNode,
-  dynamicStaleAt: number,
-  bfcacheId: number
-): void {
-  // Read the special "segment" that represents the head data.
-  writeToBFCache(
-    now,
-    varyPath,
-    head,
-    prefetchHead,
-    null,
-    null,
-    dynamicStaleAt,
-    bfcacheId
-  )
 }
 
 /**

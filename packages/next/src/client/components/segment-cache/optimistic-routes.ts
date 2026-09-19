@@ -789,7 +789,8 @@ export function matchKnownRoute(
   }
   const reifiedMetadata = createMetadataRouteTree(
     metadataVaryPath,
-    reifiedTree.prefetchHints
+    reifiedTree.prefetchHints,
+    null
   )
 
   // Create a synthetic (predicted) entry and store it as the new pattern.
